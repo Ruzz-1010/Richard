@@ -14,7 +14,12 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // For demo purposes - accept any registration without checking duplicates
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists with this email' });
+        }
+
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -65,27 +70,74 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Email and password are required' });
         }
 
-        // For demo purposes - accept any login
-        // In real app, you would verify against database
-        const isAdmin = email.includes('admin');
-        
-        // Generate token
+        // DEMO MODE: For demo purposes, accept specific emails without database check
+        const demoUsers = {
+            'admin@hotel.com': { 
+                name: 'Admin User', 
+                role: 'admin', 
+                id: 'demo-admin-id' 
+            },
+            'user@hotel.com': { 
+                name: 'Regular User', 
+                role: 'user', 
+                id: 'demo-user-id' 
+            }
+        };
+
+        // Check if it's a demo user
+        if (demoUsers[email]) {
+            const demoUser = demoUsers[email];
+            
+            // Generate token for demo user
+            const token = jwt.sign(
+                { userId: demoUser.id, role: demoUser.role },
+                process.env.JWT_SECRET || 'fallback-secret-key',
+                { expiresIn: '7d' }
+            );
+
+            console.log('Demo login successful:', email);
+
+            return res.json({
+                message: 'Login successful',
+                token,
+                user: {
+                    id: demoUser.id,
+                    name: demoUser.name,
+                    email: email,
+                    role: demoUser.role
+                }
+            });
+        }
+
+        // REAL USER: Find user in database
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate token for real user
         const token = jwt.sign(
-            { userId: 'demo-user-id', role: isAdmin ? 'admin' : 'user' },
+            { userId: user._id, role: user.role },
             process.env.JWT_SECRET || 'fallback-secret-key',
             { expiresIn: '7d' }
         );
 
-        console.log('Login successful:', email);
+        console.log('Real user login successful:', user.email);
 
         res.json({
             message: 'Login successful',
             token,
             user: {
-                id: 'demo-user-id',
-                name: isAdmin ? 'Admin User' : 'Regular User',
-                email: email,
-                role: isAdmin ? 'admin' : 'user'
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
             }
         });
     } catch (error) {
