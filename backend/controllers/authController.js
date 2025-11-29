@@ -2,7 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 // Register user
-exports.register = async (req, res) => {
+const register = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
@@ -19,11 +19,11 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: 'User already exists with this email' });
         }
 
-        // Create user - the model will automatically hash the password
+        // Create user
         const user = new User({
             name,
             email,
-            password, // This will be hashed by the pre-save hook
+            password,
             role: role || 'user'
         });
 
@@ -54,8 +54,8 @@ exports.register = async (req, res) => {
     }
 };
 
-// Login user - PROPER VERSION
-exports.login = async (req, res) => {
+// Login user
+const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -72,7 +72,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Check password using the model method
+        // Check password
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -101,4 +101,29 @@ exports.login = async (req, res) => {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
+};
+
+// Get current user
+const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        res.json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Export all functions
+module.exports = {
+    register,
+    login,
+    getMe
 };

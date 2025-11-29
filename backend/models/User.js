@@ -14,10 +14,8 @@ userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
     
     try {
-        // Only hash if password is not already hashed
-        if (!this.password.startsWith('$2a$')) {
-            this.password = await bcrypt.hash(this.password, 10);
-        }
+        // Hash the password
+        this.password = await bcrypt.hash(this.password, 10);
         next();
     } catch (error) {
         next(error);
