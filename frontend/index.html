@@ -13,11 +13,13 @@
                 <h1>🏨 Luxury Hotel</h1>
             </div>
             <nav class="nav">
-                <a href="index.html">Home</a>
+                <a href="index.html" class="active">Home</a>
                 <a href="rooms.html">Rooms</a>
                 <a href="booking.html">Booking</a>
                 <a href="feedback.html">Feedback</a>
-                <a href="login.html" class="login-btn">Login</a>
+                <div id="authSection">
+                    <!-- Dynamic auth buttons -->
+                </div>
             </nav>
         </div>
     </header>
@@ -26,7 +28,7 @@
         <div class="container">
             <div class="hero-content">
                 <h2>Welcome to Luxury Hotel</h2>
-                <p>Experience world-class comfort and service</p>
+                <p>Experience world-class comfort and service in the heart of the city</p>
                 <div class="hero-buttons">
                     <a href="rooms.html" class="btn btn-primary">View Rooms</a>
                     <a href="booking.html" class="btn btn-secondary">Book Now</a>
@@ -41,16 +43,29 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <h4>⭐ Luxury Rooms</h4>
-                    <p>Spacious and comfortable accommodations</p>
+                    <p>Spacious and comfortable accommodations with premium amenities</p>
                 </div>
                 <div class="feature-card">
                     <h4>💰 Best Prices</h4>
-                    <p>Competitive rates with no hidden fees</p>
+                    <p>Competitive rates with no hidden fees. Best value guaranteed</p>
                 </div>
                 <div class="feature-card">
                     <h4>🔒 Secure Booking</h4>
-                    <p>Safe and easy online reservation</p>
+                    <p>Safe and easy online reservation system</p>
                 </div>
+                <div class="feature-card">
+                    <h4>🏆 Award Winning</h4>
+                    <p>Recognized as one of the best hotels in the region</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rooms-preview">
+        <div class="container">
+            <h3>Featured Rooms</h3>
+            <div id="featuredRooms" class="rooms-grid">
+                <!-- Rooms will be loaded here -->
             </div>
         </div>
     </section>
@@ -62,6 +77,7 @@
     </footer>
 
     <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

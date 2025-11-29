@@ -5,39 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Luxury Hotel</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .auth-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-        .message {
-            padding: 10px;
-            margin: 1rem 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-    </style>
 </head>
 <body>
     <header class="header">
@@ -48,6 +15,7 @@
             <nav class="nav">
                 <a href="index.html">Home</a>
                 <a href="register.html">Register</a>
+                <div id="authSection"></div>
             </nav>
         </div>
     </header>
@@ -58,29 +26,54 @@
             <div id="message"></div>
             <form id="loginForm">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" required>
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="Enter your email">
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" required>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter your password" minlength="6">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
             </form>
             <p style="text-align: center; margin-top: 1rem;">
                 Don't have an account? <a href="register.html">Register here</a>
             </p>
+
+            <!-- Demo Accounts -->
+            <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                <h4 style="margin-bottom: 0.5rem; color: #2c3e50;">Demo Accounts:</h4>
+                <p><strong>Admin:</strong> admin@hotel.com / password123</p>
+                <p><strong>User:</strong> user@hotel.com / password123</p>
+            </div>
         </div>
     </main>
 
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script>
+        // Update navigation
+        auth.updateNavigation();
+
+        // Redirect if already logged in
+        if (auth.isLoggedIn()) {
+            if (auth.isAdmin()) {
+                window.location.href = 'admin/dashboard.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Handle login form
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            // Show loading
+            submitBtn.textContent = 'Logging in...';
+            submitBtn.disabled = true;
 
             const result = await auth.login(email, password);
             
@@ -93,20 +86,13 @@
                     } else {
                         window.location.href = 'index.html';
                     }
-                }, 2000);
+                }, 1500);
             } else {
                 messageDiv.innerHTML = `<div class="message error">${result.message}</div>`;
+                submitBtn.textContent = 'Login';
+                submitBtn.disabled = false;
             }
         });
-
-        // Redirect if already logged in
-        if (auth.isLoggedIn()) {
-            if (auth.isAdmin()) {
-                window.location.href = 'admin/dashboard.html';
-            } else {
-                window.location.href = 'index.html';
-            }
-        }
     </script>
 </body>
 </html>
