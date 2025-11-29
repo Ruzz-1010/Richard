@@ -5,10 +5,16 @@ const mongoose = require('mongoose');
 
 dotenv.config();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB Connected'))
-    .catch(err => console.log('❌ MongoDB Connection Error:', err));
+// Connect to MongoDB with proper options
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log('✅ MongoDB Connected Successfully'))
+.catch(err => {
+    console.log('❌ MongoDB Connection Error:', err.message);
+    console.log('🔗 Connection URI:', process.env.MONGODB_URI ? 'Present' : 'Missing');
+});
 
 const app = express();
 
@@ -17,9 +23,11 @@ app.use(express.json());
 
 // Basic test route
 app.get('/', (req, res) => {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+    
     res.json({ 
         message: '🏨 Luxury Hotel Booking API is running!',
-        database: 'Connected to MongoDB',
+        database: dbStatus,
         status: 'active',
         timestamp: new Date().toISOString()
     });
@@ -47,31 +55,9 @@ app.get('/api/rooms/:id', (req, res) => {
     res.json({ message: `Get room ${req.params.id} - to be implemented` });
 });
 
-// Simple booking routes
-app.get('/api/bookings', (req, res) => {
-    res.json({ message: 'Get all bookings - to be implemented' });
-});
-
-app.post('/api/bookings', (req, res) => {
-    res.json({ message: 'Create booking - to be implemented' });
-});
-
-// Simple feedback routes
-app.get('/api/feedback', (req, res) => {
-    res.json({ message: 'Get all feedback - to be implemented' });
-});
-
-app.post('/api/feedback', (req, res) => {
-    res.json({ message: 'Create feedback - to be implemented' });
-});
-
-// Simple admin routes
-app.get('/api/admin/dashboard', (req, res) => {
-    res.json({ message: 'Admin dashboard - to be implemented' });
-});
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔗 MongoDB URI: ${process.env.MONGODB_URI ? 'Present' : 'Missing'}`);
 });
