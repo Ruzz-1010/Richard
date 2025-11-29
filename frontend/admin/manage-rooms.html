@@ -8,17 +8,35 @@
     <style>
         .dashboard { padding: 100px 0 50px; min-height: 100vh; background: #f8f9fa; }
         .admin-nav { background: #2c3e50; padding: 1rem 0; position: fixed; width: 100%; top: 70px; z-index: 999; }
-        .admin-nav .container { display: flex; gap: 2rem; align-items: center; }
+        .admin-nav .container { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
         .admin-nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
         .admin-nav a:hover, .admin-nav a.active { background: #3498db; }
         
-        .rooms-table { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .table-header { background: #34495e; color: white; padding: 1rem; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem; font-weight: bold; }
-        .table-row { padding: 1rem; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem; border-bottom: 1px solid #eee; align-items: center; }
-        .table-row:last-child { border-bottom: none; }
-        .status-available { color: #27ae60; font-weight: bold; }
-        .status-occupied { color: #e74c3c; font-weight: bold; }
-        .btn-small { padding: 0.3rem 0.8rem; font-size: 0.8rem; margin: 0 0.2rem; }
+        .page-header { display: flex; justify-content: between; align-items: center; margin-bottom: 2rem; }
+        
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; }
+        .room-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .room-header { padding: 1.5rem; border-bottom: 1px solid #eee; }
+        .room-body { padding: 1.5rem; }
+        .room-footer { padding: 1rem 1.5rem; background: #f8f9fa; border-top: 1px solid #eee; display: flex; gap: 0.5rem; }
+        
+        .room-image { width: 100%; height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #666; }
+        .room-price { font-size: 1.5rem; font-weight: bold; color: #27ae60; }
+        .room-amenities { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+        .amenity-tag { background: #3498db; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; }
+        
+        .status-badge { padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; font-weight: bold; }
+        .status-available { background: #d4edda; color: #155724; }
+        .status-occupied { background: #f8d7da; color: #721c24; }
+        .status-reserved { background: #fff3cd; color: #856404; }
+        .status-maintenance { background: #e2e3e5; color: #383d41; }
+        
+        .btn-small { padding: 0.5rem 1rem; font-size: 0.8rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
     </style>
 </head>
 <body>
@@ -37,59 +55,95 @@
             <a href="dashboard.html">Dashboard</a>
             <a href="manage-rooms.html" class="active">Manage Rooms</a>
             <a href="manage-bookings.html">Manage Bookings</a>
-            <a href="reports.html">Reports</a>
-            <a href="feedbacks.html">Feedbacks</a>
+            <a href="reports.html">Reports & Analytics</a>
+            <a href="revenue-services.html">Revenue Services</a>
         </div>
     </div>
 
     <main class="container dashboard">
-        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem;">
+        <div class="page-header">
             <h2>Room Management</h2>
-            <button class="btn btn-primary" onclick="showAddRoomForm()">➕ Add New Room</button>
+            <button class="btn btn-primary" onclick="showRoomModal()">➕ Add New Room</button>
         </div>
 
-        <div class="rooms-table">
-            <div class="table-header">
-                <div>Room Name</div>
-                <div>Price</div>
-                <div>Status</div>
-                <div>Type</div>
-                <div>Actions</div>
-            </div>
-            <div id="roomsList">
-                <!-- Rooms will be loaded here -->
-            </div>
+        <div class="rooms-grid" id="roomsGrid">
+            <!-- Rooms will be loaded here -->
         </div>
     </main>
 
-    <!-- Add Room Modal -->
-    <div id="addRoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px;">
-            <h3>Add New Room</h3>
-            <form id="addRoomForm">
-                <div class="form-group">
-                    <label>Room Name</label>
-                    <input type="text" id="roomName" required>
+    <!-- Add/Edit Room Modal -->
+    <div id="roomModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add New Room</h3>
+            <form id="roomForm">
+                <input type="hidden" id="roomId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Room Name *</label>
+                        <input type="text" id="roomName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Room Type *</label>
+                        <select id="roomType" required>
+                            <option value="">Select Type</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Deluxe">Deluxe</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Suite">Suite</option>
+                            <option value="Presidential">Presidential</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Price per Night ($) *</label>
+                        <input type="number" id="roomPrice" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Capacity *</label>
+                        <input type="number" id="roomCapacity" required min="1" max="10" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select id="roomStatus" required>
+                            <option value="Available">Available</option>
+                            <option value="Occupied">Occupied</option>
+                            <option value="Reserved">Reserved</option>
+                            <option value="Maintenance">Under Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bed Type</label>
+                        <select id="roomBedType">
+                            <option value="Single Bed">Single Bed</option>
+                            <option value="Queen Bed" selected>Queen Bed</option>
+                            <option value="King Bed">King Bed</option>
+                            <option value="Twin Beds">Twin Beds</option>
+                        </select>
+                    </div>
                 </div>
+                
                 <div class="form-group">
-                    <label>Price per Night</label>
-                    <input type="number" id="roomPrice" required>
+                    <label>Description</label>
+                    <textarea id="roomDescription" rows="3" placeholder="Room description..."></textarea>
                 </div>
+                
                 <div class="form-group">
-                    <label>Room Type</label>
-                    <input type="text" id="roomType" required>
+                    <label>Amenities</label>
+                    <div class="amenities-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
+                        <label><input type="checkbox" name="amenities" value="WiFi"> WiFi</label>
+                        <label><input type="checkbox" name="amenities" value="TV"> TV</label>
+                        <label><input type="checkbox" name="amenities" value="AC"> Air Conditioning</label>
+                        <label><input type="checkbox" name="amenities" value="Mini Bar"> Mini Bar</label>
+                        <label><input type="checkbox" name="amenities" value="Safe"> Safe</label>
+                        <label><input type="checkbox" name="amenities" value="Jacuzzi"> Jacuzzi</label>
+                        <label><input type="checkbox" name="amenities" value="Ocean View"> Ocean View</label>
+                        <label><input type="checkbox" name="amenities" value="Balcony"> Balcony</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="roomStatus" required>
-                        <option value="Available">Available</option>
-                        <option value="Occupied">Occupied</option>
-                        <option value="Maintenance">Maintenance</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">Add Room</button>
-                    <button type="button" class="btn btn-secondary" onclick="hideAddRoomForm()">Cancel</button>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Room</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideRoomModal()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -97,7 +151,7 @@
 
     <script src="../js/config.js"></script>
     <script src="../js/auth.js"></script>
-    <script src="../js/admin.js"></script>
+    <script src="../js/admin-rooms.js"></script>
     <script>
         // Check admin access
         if (!auth.isLoggedIn() || !auth.isAdmin()) {
@@ -107,69 +161,6 @@
 
         document.getElementById('adminName').textContent = auth.user.name;
         loadRooms();
-
-        function loadRooms() {
-            adminDashboard.loadRooms().then(() => {
-                const roomsList = document.getElementById('roomsList');
-                roomsList.innerHTML = adminDashboard.rooms.map(room => `
-                    <div class="table-row">
-                        <div><strong>${room.name}</strong></div>
-                        <div>$${room.price}/night</div>
-                        <div class="status-${room.status.toLowerCase()}">${room.status}</div>
-                        <div>${room.type || 'Suite'}</div>
-                        <div>
-                            <button class="btn btn-primary btn-small" onclick="editRoom(${room.id})">Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteRoom(${room.id})">Delete</button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        function showAddRoomForm() {
-            document.getElementById('addRoomModal').style.display = 'flex';
-        }
-
-        function hideAddRoomForm() {
-            document.getElementById('addRoomModal').style.display = 'none';
-        }
-
-        document.getElementById('addRoomForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const roomData = {
-                name: document.getElementById('roomName').value,
-                price: parseInt(document.getElementById('roomPrice').value),
-                type: document.getElementById('roomType').value,
-                status: document.getElementById('roomStatus').value
-            };
-            
-            const success = await adminDashboard.createRoom(roomData);
-            if (success) {
-                hideAddRoomForm();
-                this.reset();
-                loadRooms();
-            }
-        });
-
-        function editRoom(roomId) {
-            const room = adminDashboard.rooms.find(r => r.id == roomId);
-            if (room) {
-                document.getElementById('roomName').value = room.name;
-                document.getElementById('roomPrice').value = room.price;
-                document.getElementById('roomType').value = room.type || '';
-                document.getElementById('roomStatus').value = room.status;
-                showAddRoomForm();
-                // Note: In full implementation, you'd have separate edit functionality
-            }
-        }
-
-        function deleteRoom(roomId) {
-            adminDashboard.deleteRoom(roomId).then(success => {
-                if (success) {
-                    loadRooms();
-                }
-            });
-        }
     </script>
 </body>
 </html>

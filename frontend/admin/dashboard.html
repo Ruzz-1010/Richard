@@ -26,6 +26,7 @@
             display: flex;
             gap: 2rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .admin-nav a {
@@ -34,6 +35,7 @@
             padding: 0.5rem 1rem;
             border-radius: 5px;
             transition: background 0.3s;
+            white-space: nowrap;
         }
 
         .admin-nav a:hover, .admin-nav a.active {
@@ -42,7 +44,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -54,30 +56,67 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: center;
             transition: transform 0.3s;
+            border-left: 4px solid #3498db;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
         }
 
+        .stat-card.occupied { border-left-color: #e74c3c; }
+        .stat-card.available { border-left-color: #27ae60; }
+        .stat-card.revenue { border-left-color: #f39c12; }
+        .stat-card.bookings { border-left-color: #9b59b6; }
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #3498db;
+            color: #2c3e50;
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
             color: #666;
             font-size: 0.9rem;
+            margin-bottom: 0.5rem;
         }
 
-        .recent-activity, .quick-actions {
+        .stat-change {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .change-positive { background: #d4edda; color: #155724; }
+        .change-negative { background: #f8d7da; color: #721c24; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
             background: white;
             padding: 1.5rem;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .section-title h3 {
+            margin: 0;
         }
 
         .activity-item {
@@ -97,10 +136,11 @@
             font-size: 0.8rem;
         }
 
-        .action-buttons {
+        .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
+            margin-top: 1.5rem;
         }
 
         .action-btn {
@@ -121,6 +161,18 @@
             background: #2980b9;
         }
 
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-checked-in { background: #cce7ff; color: #004085; }
+        .status-checked-out { background: #e2e3e5; color: #383d41; }
+
         .logout-btn {
             background: #e74c3c;
             color: white;
@@ -131,11 +183,19 @@
             margin-left: auto;
         }
 
-        .section-title {
-            margin-bottom: 1.5rem;
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 0.5rem;
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-nav .container {
+                gap: 1rem;
+            }
+            
+            .admin-nav a {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -157,57 +217,109 @@
             <a href="dashboard.html" class="active">Dashboard</a>
             <a href="manage-rooms.html">Manage Rooms</a>
             <a href="manage-bookings.html">Manage Bookings</a>
-            <a href="reports.html">Reports</a>
-            <a href="feedbacks.html">Feedbacks</a>
+            <a href="reports.html">Reports & Analytics</a>
+            <a href="revenue-services.html">Revenue Services</a>
         </div>
     </div>
 
     <main class="container dashboard">
-        <h2 class="section-title">Hotel Overview</h2>
+        <div class="section-title">
+            <h2>Hotel Overview</h2>
+            <button class="btn btn-primary" onclick="loadDashboard()">🔄 Refresh</button>
+        </div>
         
+        <!-- Statistics Grid -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number" id="totalRooms">0</div>
                 <div class="stat-label">Total Rooms</div>
+                <div class="stat-change change-positive" id="roomsChange">+0%</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card occupied">
                 <div class="stat-number" id="occupiedRooms">0</div>
                 <div class="stat-label">Occupied Rooms</div>
+                <div class="stat-change change-positive" id="occupiedChange">+0%</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card available">
                 <div class="stat-number" id="availableRooms">0</div>
                 <div class="stat-label">Available Rooms</div>
+                <div class="stat-change change-negative" id="availableChange">-0%</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card revenue">
                 <div class="stat-number" id="totalRevenue">$0</div>
                 <div class="stat-label">Total Revenue</div>
+                <div class="stat-change change-positive" id="revenueChange">+0%</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card bookings">
                 <div class="stat-number" id="totalBookings">0</div>
                 <div class="stat-label">Total Bookings</div>
+                <div class="stat-change change-positive" id="bookingsChange">+0%</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="pendingBookings">0</div>
-                <div class="stat-label">Pending Bookings</div>
+                <div class="stat-number" id="occupancyRate">0%</div>
+                <div class="stat-label">Occupancy Rate</div>
+                <div class="stat-change change-positive" id="occupancyChange">+0%</div>
             </div>
         </div>
 
-        <div class="quick-actions">
-            <h3 class="section-title">Quick Actions</h3>
-            <div class="action-buttons">
-                <a href="manage-rooms.html" class="action-btn">➕ Add New Room</a>
-                <a href="manage-bookings.html" class="action-btn">📋 View All Bookings</a>
-                <a href="reports.html" class="action-btn">📊 Generate Reports</a>
-                <button class="action-btn" onclick="refreshDashboard()">🔄 Refresh Data</button>
+        <div class="dashboard-grid">
+            <!-- Recent Bookings -->
+            <div class="dashboard-card">
+                <div class="section-title">
+                    <h3>Recent Bookings</h3>
+                    <a href="manage-bookings.html" class="btn btn-primary">View All</a>
+                </div>
+                <div id="recentBookings">
+                    <div class="activity-item">
+                        <span>Loading recent bookings...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="section-title">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="quick-actions">
+                    <a href="manage-rooms.html?action=add" class="action-btn">➕ Add New Room</a>
+                    <a href="manage-bookings.html" class="action-btn">📋 View All Bookings</a>
+                    <a href="reports.html" class="action-btn">📊 Generate Reports</a>
+                    <a href="revenue-services.html" class="action-btn">💰 Revenue Services</a>
+                    <button class="action-btn" onclick="loadDashboard()">🔄 Refresh Data</button>
+                    <button class="action-btn" onclick="exportData()">📤 Export Data</button>
+                </div>
+
+                <!-- System Status -->
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                    <h4 style="margin-bottom: 1rem;">System Status</h4>
+                    <div id="systemStatus">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>API Connection:</span>
+                            <span id="apiStatus" style="color: #e74c3c;">❌ Disconnected</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Database:</span>
+                            <span id="dbStatus" style="color: #e74c3c;">❌ Disconnected</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Last Update:</span>
+                            <span id="lastUpdate">Never</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="recent-activity">
-            <h3 class="section-title">Recent Activity</h3>
-            <div id="recentActivity">
+        <!-- Recent Feedback -->
+        <div class="dashboard-card">
+            <div class="section-title">
+                <h3>Recent Feedback</h3>
+                <a href="#" class="btn btn-primary">View All</a>
+            </div>
+            <div id="recentFeedback">
                 <div class="activity-item">
-                    <span>Loading recent activity...</span>
-                    <span class="activity-time">Just now</span>
+                    <span>Loading recent feedback...</span>
                 </div>
             </div>
         </div>
@@ -215,7 +327,7 @@
 
     <script src="../js/config.js"></script>
     <script src="../js/auth.js"></script>
-    <script src="../js/admin.js"></script>
+    <script src="../js/admin-dashboard.js"></script>
     <script>
         // Check if user is admin
         if (!auth.isLoggedIn() || !auth.isAdmin()) {
@@ -229,15 +341,13 @@
         // Load dashboard data
         loadDashboard();
 
-        // Refresh dashboard function
-        function refreshDashboard() {
-            document.getElementById('recentActivity').innerHTML = 
-                '<div class="activity-item"><span>Refreshing data...</span><span class="activity-time">Just now</span></div>';
-            loadDashboard();
-        }
-
         // Auto-refresh every 30 seconds
         setInterval(loadDashboard, 30000);
+
+        // Export data function
+        function exportData() {
+            alert('Export feature will be implemented soon!');
+        }
     </script>
 </body>
 </html>
