@@ -73,13 +73,14 @@ class Auth {
     }
 
     // Logout function
-    logout() {
-        this.token = null;
-        this.user = null;
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = 'index.html';
-    }
+logout() {
+    this.token = null;
+    this.user = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // Redirect to login page
+    window.location.href = '../login.html';
+}
 
     // Get auth headers for API calls
     getAuthHeaders() {
