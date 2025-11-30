@@ -69,8 +69,8 @@ const login = async (req, res) => {
 
         // Verify reCAPTCHA
         const recaptcha = new Recaptcha({
-            siteKey: '6LeyrhwsAAAAACZx4BBID7lZ1VEeC-rJfh5yQIA8',
-            secretKey: '6LeyrhwsAAAAAJDIsKE8cX_KR9Dxhl_Q40hwSE0x'
+            siteKey: '6LeyrhwsAAAAAJDIsKE8cX_KR9Dxhl_Q40hwSE0x',
+            secretKey: '6LeyrhwsAAAAACZx4BBID7lZ1VEeC-rJfh5yQIA8'
         });
 
         try {
