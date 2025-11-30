@@ -129,34 +129,91 @@ router.put('/bookings/:id/status', adminAuth, async (req, res) => {
     }
 });
 
-// Get reports - REAL DATA
-router.get('/reports', adminAuth, async (req, res) => {
-    try {
-        const bookings = await Booking.find().populate('room');
-        const rooms = await Room.find();
-        
-        const revenueData = bookings.map(b => ({
-            date: b.createdAt.toISOString().split('T')[0],
-            revenue: b.totalPrice || 0
-        }));
+// FEEDBACK MANAGEMENT ROUTES
 
-        const roomOccupancy = rooms.reduce((acc, room) => {
-            acc[room.status] = (acc[room.status] || 0) + 1;
-            return acc;
-        }, {});
+// Admin feedback management - Get all feedback
+router.get('/feedback', adminAuth, async (req, res) => {
+    try {
+        const feedbacks = await Feedback.find()
+            .populate('user', 'name email')
+            .populate('booking')
+            .sort({ createdAt: -1 });
 
         res.json({
             success: true,
-            revenueData,
-            roomOccupancy,
-            totalRevenue: bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0),
-            totalBookings: bookings.length
+            feedbacks: feedbacks.map(feedback => ({
+                id: feedback._id,
+                user: feedback.user,
+                rating: feedback.rating,
+                comment: feedback.comment,
+                category: feedback.category,
+                status: feedback.status,
+                booking: feedback.booking,
+                createdAt: feedback.createdAt,
+                adminReply: feedback.response?.adminReply || null
+            }))
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-// Reports & Analytics - REAL DATA
+
+// Admin reply to feedback
+router.put('/feedback/:id/reply', adminAuth, async (req, res) => {
+    try {
+        const { adminReply } = req.body;
+        const feedback = await Feedback.findByIdAndUpdate(
+            req.params.id,
+            {
+                'response.adminReply': adminReply,
+                'response.repliedAt': new Date(),
+                'response.repliedBy': req.user.id
+            },
+            { new: true }
+        ).populate('user', 'name email');
+
+        res.json({
+            success: true,
+            message: 'Reply added successfully',
+            feedback: {
+                id: feedback._id,
+                user: feedback.user,
+                rating: feedback.rating,
+                comment: feedback.comment,
+                adminReply: feedback.response?.adminReply
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update feedback status
+router.put('/feedback/:id/status', adminAuth, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const feedback = await Feedback.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true }
+        );
+
+        res.json({
+            success: true,
+            message: `Feedback ${status.toLowerCase()} successfully`,
+            feedback: {
+                id: feedback._id,
+                status: feedback.status
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// REPORTS & ANALYTICS ROUTES
+
+// Get reports - REAL DATA
 router.get('/reports', adminAuth, async (req, res) => {
     try {
         const { period = 'monthly' } = req.query;

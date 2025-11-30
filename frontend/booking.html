@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Room - Luxury Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .booking-page {
+            padding: 100px 0 50px;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .booking-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .booking-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .booking-summary {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .date-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #3498db;
+        }
+
+        .room-preview {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .room-preview-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .room-preview h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .room-preview .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .login-prompt {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-prompt h3 {
+            color: #856404;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .booking-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .booking-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>🏨 Luxury Hotel</h1>
+            </div>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="rooms.html">Rooms</a>
+                <a href="booking.html" class="active">Booking</a>
+                <a href="feedback.html">Feedback</a>
+                <div id="authSection">
+                    <!-- Dynamic auth buttons -->
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container booking-page">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #2c3e50;">Book Your Stay</h2>
+        
+        <div class="booking-container">
+            <!-- Booking Form -->
+            <div class="booking-form">
+                <div id="message"></div>
+
+                <!-- Login Prompt for non-logged in users -->
+                <div id="loginPrompt" class="login-prompt" style="display: none;">
+                    <h3>🔐 Login Required</h3>
+                    <p>Please login to book a room.</p>
+                    <a href="login.html" class="btn btn-primary">Login Now</a>
+                </div>
+
+                <form id="bookingForm" style="display: none;">
+                    <input type="hidden" id="roomId">
+                    <input type="hidden" id="roomPrice">
+
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="guestName" required value="${auth.user?.name || ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="guestEmail" required value="${auth.user?.email || ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="guestPhone" required placeholder="+1 (555) 123-4567">
+                    </div>
+
+                    <div class="form-group date-grid">
+                        <div>
+                            <label>Check-in Date *</label>
+                            <input type="date" id="checkIn" required min="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label>Check-out Date *</label>
+                            <input type="date" id="checkOut" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Number of Guests *</label>
+                        <select id="guests" required>
+                            <option value="1">1 Guest</option>
+                            <option value="2" selected>2 Guests</option>
+                            <option value="3">3 Guests</option>
+                            <option value="4">4 Guests</option>
+                            <option value="5">5 Guests</option>
+                            <option value="6">6 Guests</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Requests</label>
+                        <textarea id="specialRequests" rows="3" placeholder="Any special requests or requirements..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                        📋 Complete Booking
+                    </button>
+                </form>
+
+                <!-- Room Selection for non-specific booking -->
+                <div id="roomSelection" style="display: none;">
+                    <h3 style="margin-bottom: 2rem; color: #2c3e50;">Select a Room</h3>
+                    <div id="availableRooms">
+                        <!-- Available rooms will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <div class="room-preview">
+                    <div class="room-preview-image" id="summaryImage"></div>
+                    <h3 id="summaryName">Select a Room</h3>
+                    <div class="price" id="summaryPrice">$0/night</div>
+                    <div id="summaryType" style="color: #666;"></div>
+                </div>
+
+                <div class="summary-details">
+                    <div class="summary-item">
+                        <span>Check-in:</span>
+                        <span id="summaryCheckIn">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Check-out:</span>
+                        <span id="summaryCheckOut">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Nights:</span>
+                        <span id="summaryNights">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Guests:</span>
+                        <span id="summaryGuests">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Price per night:</span>
+                        <span id="summaryNightPrice">$0</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total:</span>
+                        <span id="summaryTotal">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Luxury Hotel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Update navigation
+        auth.updateNavigation();
+
+        let selectedRoom = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomIdFromUrl = urlParams.get('room');
+
+        // Load booking page
+        async function loadBookingPage() {
+            if (roomIdFromUrl) {
+                // Specific room booking
+                await loadRoomDetails(roomIdFromUrl);
+                showBookingForm();
+            } else {
+                // Room selection
+                await loadAvailableRooms();
+                showRoomSelection();
+            }
+
+            // Update form based on login status
+            updateFormForLoginStatus();
+        }
+
+        // Load room details for specific booking
+        async function loadRoomDetails(roomId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/rooms`);
+                const rooms = await response.json();
+                
+                selectedRoom = rooms.find(room => room._id === roomId);
+                
+                if (selectedRoom) {
+                    updateBookingSummary();
+                } else {
+                    document.getElementById('message').innerHTML = `
+                        <div class="error">Room not found. Please select from available rooms.</div>
+                    `;
+                    await loadAvailableRooms();
+                    showRoomSelection();
+                }
+            } catch (error) {
+                document.getElementById('message').innerHTML = `
+                    <div class="error">Error loading room details. Please try again.</div>
+                `;
+            }
+        }
+
+        // Load available rooms for selection
+        async function loadAvailableRooms() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/rooms`);
+                const rooms = await response.json();
+                
+                const availableRooms = rooms.filter(room => room.status === 'Available');
+                displayAvailableRooms(availableRooms);
+            } catch (error) {
+                document.getElementById('availableRooms').innerHTML = `
+                    <div class="error">Error loading available rooms.</div>
+                `;
+            }
+        }
+
+        // Display available rooms
+        function displayAvailableRooms(rooms) {
+            const container = document.getElementById('availableRooms');
+            
+            if (rooms.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 2rem;">
+                        <h3>No rooms available</h3>
+                        <p>All rooms are currently booked. Please check back later.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = rooms.map(room => {
+                const roomImage = room.images && room.images.length > 0 
+                    ? room.images[0] 
+                    : 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400';
+
+                return `
+                <div class="room-card" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; border: 2px solid #e9ecef; border-radius: 10px; cursor: pointer;" 
+                     onclick="selectRoom('${room._id}')">
+                    <div style="width: 100px; height: 80px; background-image: url('${roomImage}'); background-size: cover; background-position: center; border-radius: 5px;"></div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #2c3e50;">${room.name}</h4>
+                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">${room.type}</div>
+                        <div style="font-weight: bold; color: #27ae60;">$${room.price}/night</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); selectRoom('${room._id}')">
+                        Select
+                    </button>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Select room for booking
+        function selectRoom(roomId) {
+            window.location.href = `booking.html?room=${roomId}`;
+        }
+
+        // Show booking form
+        function showBookingForm() {
+            document.getElementById('bookingForm').style.display = 'block';
+            document.getElementById('roomSelection').style.display = 'none';
+        }
+
+        // Show room selection
+        function showRoomSelection() {
+            document.getElementById('bookingForm').style.display = 'none';
+            document.getElementById('roomSelection').style.display = 'block';
+        }
+
+        // Update form based on login status
+        function updateFormForLoginStatus() {
+            if (!auth.isLoggedIn()) {
+                document.getElementById('loginPrompt').style.display = 'block';
+                document.getElementById('bookingForm').style.display = 'none';
+                document.getElementById('roomSelection').style.display = 'none';
+            } else {
+                document.getElementById('loginPrompt').style.display = 'none';
+            }
+        }
+
+        // Update booking summary
+        function updateBookingSummary() {
+            if (!selectedRoom) return;
+
+            const roomImages = {
+                'Standard': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400',
+                'Deluxe': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400',
+                'Executive': 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400',
+                'Suite': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400',
+                'Presidential': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400'
+            };
+
+            const roomImage = selectedRoom.images && selectedRoom.images.length > 0 
+                ? selectedRoom.images[0] 
+                : roomImages[selectedRoom.type] || roomImages['Standard'];
+
+            document.getElementById('summaryImage').style.backgroundImage = `url('${roomImage}')`;
+            document.getElementById('summaryName').textContent = selectedRoom.name;
+            document.getElementById('summaryPrice').textContent = `$${selectedRoom.price}/night`;
+            document.getElementById('summaryType').textContent = `${selectedRoom.type} Room`;
+            document.getElementById('summaryNightPrice').textContent = `$${selectedRoom.price}`;
+
+            document.getElementById('roomId').value = selectedRoom._id;
+            document.getElementById('roomPrice').value = selectedRoom.price;
+
+            // Add event listeners for real-time summary updates
+            document.getElementById('checkIn').addEventListener('change', updateSummary);
+            document.getElementById('checkOut').addEventListener('change', updateSummary);
+            document.getElementById('guests').addEventListener('change', updateSummary);
+        }
+
+        // Update summary in real-time
+        function updateSummary() {
+            const checkIn = document.getElementById('checkIn').value;
+            const checkOut = document.getElementById('checkOut').value;
+            const guests = document.getElementById('guests').value;
+            const roomPrice = parseFloat(document.getElementById('roomPrice').value);
+
+            document.getElementById('summaryCheckIn').textContent = checkIn || '-';
+            document.getElementById('summaryCheckOut').textContent = checkOut || '-';
+            document.getElementById('summaryGuests').textContent = guests ? `${guests} Guests` : '-';
+
+            if (checkIn && checkOut) {
+                const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+                document.getElementById('summaryNights').textContent = nights;
+                document.getElementById('summaryTotal').textContent = `$${nights * roomPrice}`;
+            } else {
+                document.getElementById('summaryNights').textContent = '0';
+                document.getElementById('summaryTotal').textContent = '$0';
+            }
+        }
+
+        // Handle booking form submission
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!auth.isLoggedIn()) {
+                alert('Please login to book a room.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const bookingData = {
+                room: document.getElementById('roomId').value,
+                checkIn: document.getElementById('checkIn').value,
+                checkOut: document.getElementById('checkOut').value,
+                guests: parseInt(document.getElementById('guests').value),
+                specialRequests: document.getElementById('specialRequests').value,
+                totalPrice: calculateTotalPrice()
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...auth.getAuthHeaders()
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('message').innerHTML = `
+                        <div class="success">
+                            <h3>🎉 Booking Successful!</h3>
+                            <p>Your room has been booked successfully. You will receive a confirmation email shortly.</p>
+                            <p><strong>Booking ID:</strong> ${data.booking?._id || 'N/A'}</p>
+                        </div>
+                    `;
+                    document.getElementById('bookingForm').reset();
+                } else {
+                    document.getElementById('message').innerHTML = `
+                        <div class="error">Booking failed: ${data.message}</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('message').innerHTML = `
+                    <div class="error">Error making booking: ${error.message}</div>
+                `;
+            }
+        });
+
+        // Calculate total price
+        function calculateTotalPrice() {
+            const checkIn = document.getElementById('checkIn').value;
+            const checkOut = document.getElementById('checkOut').value;
+            const roomPrice = parseFloat(document.getElementById('roomPrice').value);
+
+            if (checkIn && checkOut) {
+                const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+                return nights * roomPrice;
+            }
+            return 0;
+        }
+
+        // Set minimum date for check-out
+        document.getElementById('checkIn').addEventListener('change', function() {
+            document.getElementById('checkOut').min = this.value;
+        });
+
+        // Load booking page
+        loadBookingPage();
+    </script>
+</body>
+</html>

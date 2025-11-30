@@ -56,21 +56,20 @@ const bookingSchema = new mongoose.Schema({
 // Update the updatedAt field before saving
 bookingSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
-    next();
-});
-
-// Calculate total price before saving
-bookingSchema.pre('save', async function(next) {
-    if (this.isModified('checkIn') || this.isModified('checkOut') || this.isModified('room')) {
+    
+    // Calculate total price if not set
+    if (this.isModified('checkIn') || this.isModified('checkOut') || !this.totalPrice) {
         const Room = mongoose.model('Room');
-        const room = await Room.findById(this.room);
-        
-        if (room) {
-            const nights = Math.ceil((this.checkOut - this.checkIn) / (1000 * 60 * 60 * 24));
-            this.totalPrice = room.price * nights;
-        }
+        Room.findById(this.room).then(room => {
+            if (room && this.checkIn && this.checkOut) {
+                const nights = Math.ceil((this.checkOut - this.checkIn) / (1000 * 60 * 60 * 24));
+                this.totalPrice = room.price * nights;
+            }
+            next();
+        }).catch(next);
+    } else {
+        next();
     }
-    next();
 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

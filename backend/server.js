@@ -18,7 +18,9 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/rooms', require('./routes/rooms'));
-app.use('/api/admin', require('./routes/admin')); // Add this line
+app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/feedback', require('./routes/feedback')); // ADD THIS LINE
+app.use('/api/admin', require('./routes/admin'));
 
 // Test route
 app.get('/', (req, res) => {

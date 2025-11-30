@@ -18,7 +18,7 @@ const roomSchema = new mongoose.Schema({
     },
     description: { 
         type: String,
-        default: '' 
+        default: 'Comfortable and well-appointed room for your stay.' 
     },
     amenities: [{ 
         type: String 
@@ -35,7 +35,8 @@ const roomSchema = new mongoose.Schema({
         type: Number, 
         required: true,
         min: 1,
-        max: 10
+        max: 10,
+        default: 2
     },
     size: { 
         type: String,
