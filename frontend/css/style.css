@@ -6,10 +6,15 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Lato', sans-serif;
     line-height: 1.6;
-    color: #eaeaea;
-    background: #0f0f0f;
+    color: #e5e4e2;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Crimson Text', serif;
+    font-weight: 400;
 }
 
 .container {
@@ -191,17 +196,18 @@ body {
 }
 
 .room-card {
-    background: #181818;
+    background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
     border-radius: 15px;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 5px 25px rgba(0,0,0,0.4);
-    transition: transform 0.3s;
+    border: 1px solid rgba(212,175,55,0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: all 0.4s ease;
 }
 
 .room-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 35px rgba(212,175,55,0.25);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 45px rgba(212,175,55,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+    border-color: rgba(212,175,55,0.4);
 }
 
 .room-image {
