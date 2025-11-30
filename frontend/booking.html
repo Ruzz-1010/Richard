@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Room - Luxury Hotel</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
     <style>
         .booking-page {
             padding: 100px 0 50px;
             min-height: 100vh;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%);
+            color: #e5e4e2;
         }
 
         .booking-container {
@@ -21,17 +23,19 @@
         }
 
         .booking-form {
-            background: white;
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(212,175,55,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
         }
 
         .booking-summary {
-            background: white;
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(212,175,55,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             height: fit-content;
             position: sticky;
             top: 120px;
@@ -45,21 +49,26 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: bold;
-            color: #2c3e50;
+            color: #d4af37;
+            font-family: 'Lato', sans-serif;
         }
 
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid rgba(212,175,55,0.3);
+            background: #111;
+            color: #e5e4e2;
             border-radius: 5px;
             font-size: 1rem;
             box-sizing: border-box;
+            font-family: 'Lato', sans-serif;
+            transition: border-color 0.3s;
         }
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: #d4af37;
         }
 
         .date-grid {
@@ -73,7 +82,8 @@
             justify-content: space-between;
             margin-bottom: 1rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+            color: #b0b0b0;
         }
 
         .summary-total {
@@ -81,10 +91,10 @@
             justify-content: space-between;
             font-size: 1.2rem;
             font-weight: bold;
-            color: #2c3e50;
+            color: #d4af37;
             margin-top: 1rem;
             padding-top: 1rem;
-            border-top: 2px solid #3498db;
+            border-top: 2px solid rgba(212,175,55,0.4);
         }
 
         .room-preview {
@@ -102,19 +112,20 @@
         }
 
         .room-preview h3 {
-            color: #2c3e50;
+            color: #d4af37;
             margin-bottom: 0.5rem;
+            font-family: 'Crimson Text', serif;
         }
 
         .room-preview .price {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #27ae60;
+            color: #d4af37;
         }
 
         .login-prompt {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border: 1px solid rgba(212,175,55,0.3);
             border-radius: 5px;
             padding: 1.5rem;
             text-align: center;
@@ -122,8 +133,9 @@
         }
 
         .login-prompt h3 {
-            color: #856404;
+            color: #d4af37;
             margin-bottom: 1rem;
+            font-family: 'Crimson Text', serif;
         }
 
         .message {
@@ -134,26 +146,26 @@
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: linear-gradient(145deg, #1a4d1a, #2a5d2a);
+            color: #90ee90;
+            border: 1px solid #4caf50;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: linear-gradient(145deg, #4d1a1a, #5d2a2a);
+            color: #ffb3ba;
+            border: 1px solid #f44336;
         }
 
         @media (max-width: 768px) {
             .booking-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .date-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .booking-summary {
                 position: static;
             }
@@ -179,7 +191,7 @@
     </header>
 
     <main class="container booking-page">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #2c3e50;">Book Your Stay</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #d4af37; font-family: 'Crimson Text', serif;">Book Your Stay</h2>
         
         <div class="booking-container">
             <!-- Booking Form -->
