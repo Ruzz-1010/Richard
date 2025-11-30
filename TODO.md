@@ -1,24 +1,17 @@
-# TODO: Enhance Design for Luxurious Look
+# Fix Registration/Login Issue
 
-## Step 1: Update Global CSS (style.css)
-- [x] Change font family to more luxurious options (e.g., serif for headings, elegant sans-serif for body)
-- [x] Enhance color palette with deeper metallics, burgundy accents, and richer gradients
-- [x] Add more sophisticated shadows, borders, and hover effects
-- [x] Ensure consistent luxurious theme across all elements
+## Problem
+- register.html uses localStorage simulation instead of backend API
+- Users register locally but database isn't updated
+- Login fails because user doesn't exist in database
+- Re-registering loops back to registration page
 
-## Step 2: Update Rooms Page (rooms.html)
-- [x] Remove or override light-themed inline styles to match dark luxurious theme
-- [x] Apply luxurious styling to room cards, filters, and page elements
-- [x] Ensure fonts and colors align with updated global CSS
+## Solution
+- [ ] Update register.html to use backend API via auth.js
+- [ ] Remove localStorage simulation code
+- [ ] Include proper scripts (config.js, auth.js)
+- [ ] Update form submission logic
+- [ ] Test registration and login flow
 
-## Step 3: Update Admin Pages
-- [x] Update admin dashboard (dashboard.html) with luxurious theme
-- [x] Update manage-rooms.html with luxurious theme
-- [x] Update manage-bookings.html with luxurious theme
-- [x] Update reports.html with luxurious theme
-- [x] Update revenue-services.html with luxurious theme
-
-## Step 4: Test and Verify
-- [x] Open the website to check visual consistency
-- [x] Ensure responsiveness and luxurious feel on different devices
-- [x] Make any final adjustments based on appearance
+## Files to Edit
+- frontend/register.html
