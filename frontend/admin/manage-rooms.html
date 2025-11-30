@@ -77,13 +77,30 @@
         .room-image { 
             width: 100%; 
             height: 200px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex; 
             align-items: center; 
             justify-content: center; 
             color: white;
             font-size: 1.2rem;
             font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .room-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+        }
+        .room-image span {
+            position: relative;
+            z-index: 1;
         }
         .room-price { 
             font-size: 1.5rem; 
@@ -186,6 +203,28 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #3498db;
+        }
+
+        /* Image URL input */
+        .image-url-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .image-url-input input {
+            flex: 1;
+        }
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            border: 2px dashed #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
         }
 
         /* Add Room Button */
@@ -309,6 +348,17 @@
                 </div>
                 
                 <div class="form-group">
+                    <label>Room Image URL</label>
+                    <div class="image-url-input">
+                        <input type="url" id="roomImage" placeholder="https://example.com/room-image.jpg">
+                        <button type="button" class="btn-small btn-secondary" onclick="previewImage()">Preview</button>
+                    </div>
+                    <div class="image-preview" id="imagePreview">
+                        Image preview will appear here
+                    </div>
+                </div>
+                
+                <div class="form-group">
                     <label>Description</label>
                     <textarea id="roomDescription" rows="3" placeholder="Describe the room features, view, and amenities..."></textarea>
                 </div>
@@ -354,6 +404,15 @@
     <script src="../js/config.js"></script>
     <script src="../js/auth.js"></script>
     <script>
+        // Room images based on type
+        const roomImages = {
+            'Standard': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400',
+            'Deluxe': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400',
+            'Executive': 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400',
+            'Suite': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400',
+            'Presidential': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400'
+        };
+
         // Check admin access
         if (!auth.isLoggedIn() || !auth.isAdmin()) {
             alert('Access denied. Admin only.');
@@ -383,7 +442,7 @@
             }
         }
 
-        // Render rooms
+        // Render rooms with images
         function renderRooms() {
             const container = document.getElementById('roomsGrid');
             
@@ -400,8 +459,17 @@
                 return;
             }
 
-            container.innerHTML = rooms.map(room => `
+            container.innerHTML = rooms.map(room => {
+                // Get appropriate image based on room type
+                const roomImage = room.images && room.images.length > 0 
+                    ? room.images[0] 
+                    : roomImages[room.type] || roomImages['Standard'];
+                
+                return `
                 <div class="room-card">
+                    <div class="room-image" style="background-image: url('${roomImage}')">
+                        <span>${room.name}</span>
+                    </div>
                     <div class="room-header">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                             <h3 style="margin: 0;">${room.name}</h3>
@@ -414,10 +482,6 @@
                     </div>
                     
                     <div class="room-body">
-                        <div class="room-image">
-                            ${room.name}
-                        </div>
-                        
                         <div style="margin: 1rem 0;">
                             <strong>Description:</strong>
                             <p style="margin: 0.5rem 0; color: #666; font-size: 0.9rem;">
@@ -445,7 +509,8 @@
                         <button class="btn-small btn-danger" onclick="deleteRoom('${room._id}')">🗑️ Delete</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Show add room form
@@ -454,11 +519,27 @@
             document.getElementById('modalTitle').textContent = 'Add New Room';
             document.getElementById('roomForm').reset();
             document.getElementById('roomId').value = '';
+            document.getElementById('imagePreview').style.backgroundImage = 'none';
+            document.getElementById('imagePreview').textContent = 'Image preview will appear here';
         }
 
         // Hide room modal
         function hideRoomModal() {
             document.getElementById('roomModal').style.display = 'none';
+        }
+
+        // Preview image
+        function previewImage() {
+            const imageUrl = document.getElementById('roomImage').value;
+            const preview = document.getElementById('imagePreview');
+            
+            if (imageUrl) {
+                preview.style.backgroundImage = `url('${imageUrl}')`;
+                preview.textContent = '';
+            } else {
+                preview.style.backgroundImage = 'none';
+                preview.textContent = 'Image preview will appear here';
+            }
         }
 
         // Edit room
@@ -477,6 +558,13 @@
                 document.getElementById('roomStatus').value = room.status;
                 document.getElementById('roomBedType').value = room.bedType || 'Queen Bed';
                 document.getElementById('roomDescription').value = room.description || '';
+                
+                // Set image if exists
+                if (room.images && room.images.length > 0) {
+                    document.getElementById('roomImage').value = room.images[0];
+                    document.getElementById('imagePreview').style.backgroundImage = `url('${room.images[0]}')`;
+                    document.getElementById('imagePreview').textContent = '';
+                }
 
                 // Clear all amenities checkboxes first
                 document.querySelectorAll('input[name="amenities"]').forEach(checkbox => {
@@ -525,6 +613,10 @@
             const amenities = Array.from(document.querySelectorAll('input[name="amenities"]:checked'))
                 .map(checkbox => checkbox.value);
 
+            // Get image URL
+            const imageUrl = document.getElementById('roomImage').value;
+            const images = imageUrl ? [imageUrl] : [];
+
             const roomData = {
                 name: document.getElementById('roomName').value,
                 type: document.getElementById('roomType').value,
@@ -533,7 +625,8 @@
                 status: document.getElementById('roomStatus').value,
                 bedType: document.getElementById('roomBedType').value,
                 description: document.getElementById('roomDescription').value,
-                amenities: amenities
+                amenities: amenities,
+                images: images
             };
 
             const roomId = document.getElementById('roomId').value;
@@ -580,6 +673,9 @@
                 hideRoomModal();
             }
         });
+
+        // Auto-preview image when URL changes
+        document.getElementById('roomImage').addEventListener('input', previewImage);
 
         // Load rooms on page load
         loadRooms();
