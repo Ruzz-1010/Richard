@@ -11,7 +11,14 @@
 - [x] Apply luxurious styling to room cards, filters, and page elements
 - [x] Ensure fonts and colors align with updated global CSS
 
-## Step 3: Test and Verify
+## Step 3: Update Admin Pages
+- [x] Update admin dashboard (dashboard.html) with luxurious theme
+- [x] Update manage-rooms.html with luxurious theme
+- [x] Update manage-bookings.html with luxurious theme
+- [x] Update reports.html with luxurious theme
+- [x] Update revenue-services.html with luxurious theme
+
+## Step 4: Test and Verify
 - [x] Open the website to check visual consistency
 - [x] Ensure responsiveness and luxurious feel on different devices
 - [x] Make any final adjustments based on appearance
