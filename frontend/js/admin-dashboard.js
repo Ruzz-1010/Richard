@@ -9,15 +9,18 @@ class AdminDashboard {
     // Load dashboard data
     async loadDashboard() {
         try {
+            console.log('Loading dashboard data...');
+            
             const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
                 headers: auth.getAuthHeaders()
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch dashboard data');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('Dashboard data:', data);
 
             if (data.success) {
                 this.stats = data.stats;
@@ -119,6 +122,8 @@ class AdminDashboard {
 
     // Demo data fallback
     loadDemoData() {
+        console.log('Loading demo data...');
+        
         this.stats = {
             totalRooms: 25,
             occupiedRooms: 18,

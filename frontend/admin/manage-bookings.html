@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bookings - Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .dashboard { padding: 100px 0 50px; min-height: 100vh; background: #f8f9fa; }
+        .admin-nav { background: #2c3e50; padding: 1rem 0; position: fixed; width: 100%; top: 70px; z-index: 999; }
+        .admin-nav .container { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+        .admin-nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
+        .admin-nav a:hover, .admin-nav a.active { background: #3498db; }
+        
+        .bookings-table { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .table-header { background: #34495e; color: white; padding: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; gap: 1rem; font-weight: bold; }
+        .table-row { padding: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; gap: 1rem; border-bottom: 1px solid #eee; align-items: center; }
+        .status-badge { padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; font-weight: bold; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-checked-in { background: #cce7ff; color: #004085; }
+        .status-checked-out { background: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo"><h1>🏨 Manage Bookings</h1></div>
+            <nav class="nav">
+                <span>Welcome, <strong id="adminName"></strong></span>
+                <button class="logout-btn" onclick="auth.logout()">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-nav">
+        <div class="container">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="manage-rooms.html">Manage Rooms</a>
+            <a href="manage-bookings.html" class="active">Manage Bookings</a>
+            <a href="reports.html">Reports & Analytics</a>
+        </div>
+    </div>
+
+    <main class="container dashboard">
+        <h2>Booking Management</h2>
+        
+        <div class="bookings-table">
+            <div class="table-header">
+                <div>Guest</div>
+                <div>Room</div>
+                <div>Check-in</div>
+                <div>Check-out</div>
+                <div>Status</div>
+                <div>Actions</div>
+            </div>
+            <div id="bookingsList">
+                <!-- Bookings will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (!auth.isLoggedIn() || !auth.isAdmin()) {
+            alert('Access denied.');
+            window.location.href = '../login.html';
+        }
+
+        document.getElementById('adminName').textContent = auth.user.name;
+        loadBookings();
+
+        async function loadBookings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/bookings`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayBookings(data.bookings);
+                }
+            } catch (error) {
+                document.getElementById('bookingsList').innerHTML = '<div class="table-row"><div colspan="6">Error loading bookings</div></div>';
+            }
+        }
+
+        function displayBookings(bookings) {
+            const container = document.getElementById('bookingsList');
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<div class="table-row"><div style="grid-column: 1 / -1; text-align: center;">No bookings found</div></div>';
+                return;
+            }
+
+            container.innerHTML = bookings.map(booking => `
+                <div class="table-row">
+                    <div>${booking.user?.name || 'Guest'}</div>
+                    <div>${booking.room?.name || 'Unknown'}</div>
+                    <div>${new Date(booking.checkIn).toLocaleDateString()}</div>
+                    <div>${new Date(booking.checkOut).toLocaleDateString()}</div>
+                    <div>
+                        <span class="status-badge status-${booking.status.toLowerCase()}">${booking.status}</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary btn-small" onclick="updateBookingStatus('${booking._id}', 'Confirmed')">Confirm</button>
+                        <button class="btn btn-success btn-small" onclick="updateBookingStatus('${booking._id}', 'Checked-in')">Check-in</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateBookingStatus(bookingId, status) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/bookings/${bookingId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Booking ${status.toLowerCase()} successfully!`);
+                    loadBookings();
+                }
+            } catch (error) {
+                alert('Error updating booking: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

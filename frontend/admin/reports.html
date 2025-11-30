@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .dashboard { padding: 100px 0 50px; min-height: 100vh; background: #f8f9fa; }
+        .admin-nav { background: #2c3e50; padding: 1rem 0; position: fixed; width: 100%; top: 70px; z-index: 999; }
+        .admin-nav .container { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+        .admin-nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
+        .admin-nav a:hover, .admin-nav a.active { background: #3498db; }
+        
+        .reports-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .report-card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .chart-container { height: 300px; background: #f8f9fa; border-radius: 5px; padding: 1rem; margin: 1rem 0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .stat-item { background: #f8f9fa; padding: 1rem; border-radius: 5px; text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #2c3e50; }
+        .stat-label { color: #666; font-size: 0.9rem; }
+        
+        .period-selector { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .period-btn { padding: 0.5rem 1rem; border: 1px solid #3498db; background: white; color: #3498db; border-radius: 5px; cursor: pointer; }
+        .period-btn.active { background: #3498db; color: white; }
+        
+        .table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .table th, .table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #eee; }
+        .table th { background: #f8f9fa; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo"><h1>📊 Reports & Analytics</h1></div>
+            <nav class="nav">
+                <span>Welcome, <strong id="adminName"></strong></span>
+                <button class="logout-btn" onclick="auth.logout()">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-nav">
+        <div class="container">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="manage-rooms.html">Manage Rooms</a>
+            <a href="manage-bookings.html">Manage Bookings</a>
+            <a href="reports.html" class="active">Reports & Analytics</a>
+            <a href="revenue-services.html">Revenue Services</a>
+        </div>
+    </div>
+
+    <main class="container dashboard">
+        <div class="section-title">
+            <h2>Hotel Performance Reports</h2>
+            <div class="period-selector">
+                <button class="period-btn active" onclick="loadReports('daily')">Daily</button>
+                <button class="period-btn" onclick="loadReports('weekly')">Weekly</button>
+                <button class="period-btn" onclick="loadReports('monthly')">Monthly</button>
+                <button class="period-btn" onclick="loadReports('yearly')">Yearly</button>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="totalRevenue">$0</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalBookings">0</div>
+                <div class="stat-label">Total Bookings</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgBookingValue">$0</div>
+                <div class="stat-label">Avg Booking Value</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="occupancyRate">0%</div>
+                <div class="stat-label">Occupancy Rate</div>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+            <!-- Revenue Chart -->
+            <div class="report-card">
+                <h3>Revenue Trend</h3>
+                <div class="chart-container" id="revenueChart">
+                    <div style="display: flex; align-items: end; justify-content: space-around; height: 100%; padding: 1rem;" id="revenueBars">
+                        <!-- Revenue bars will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room Performance -->
+            <div class="report-card">
+                <h3>Room Type Performance</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Room Type</th>
+                            <th>Revenue</th>
+                            <th>Bookings</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roomPerformance">
+                        <!-- Room performance data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Booking Status Distribution -->
+            <div class="report-card">
+                <h3>Booking Status</h3>
+                <div id="statusDistribution">
+                    <!-- Status distribution will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Revenue Summary -->
+            <div class="report-card">
+                <h3>Revenue Summary</h3>
+                <div id="revenueSummary">
+                    <!-- Revenue summary will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="report-card">
+            <h3>Export Reports</h3>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary" onclick="exportPDF()">📄 Export as PDF</button>
+                <button class="btn btn-secondary" onclick="exportExcel()">📊 Export as Excel</button>
+                <button class="btn btn-success" onclick="printReport()">🖨️ Print Report</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (!auth.isLoggedIn() || !auth.isAdmin()) {
+            alert('Access denied.');
+            window.location.href = '../login.html';
+        }
+
+        document.getElementById('adminName').textContent = auth.user.name;
+        
+        let currentPeriod = 'daily';
+        loadReports(currentPeriod);
+
+        async function loadReports(period) {
+            try {
+                // Update active period button
+                document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+                event?.target.classList.add('active');
+                currentPeriod = period;
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/reports?period=${period}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayReports(data.reports);
+                } else {
+                    alert('Error loading reports: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error loading reports: ' + error.message);
+            }
+        }
+
+        function displayReports(reports) {
+            // Update key metrics
+            document.getElementById('totalRevenue').textContent = `$${reports.totalRevenue.toLocaleString()}`;
+            document.getElementById('totalBookings').textContent = reports.totalBookings;
+            document.getElementById('avgBookingValue').textContent = `$${reports.averageBookingValue.toFixed(2)}`;
+            
+            // Calculate occupancy rate (simplified)
+            const occupancyRate = (reports.totalBookings / 30 * 100).toFixed(1); // Assuming 30 rooms
+            document.getElementById('occupancyRate').textContent = `${occupancyRate}%`;
+
+            // Display revenue chart
+            displayRevenueChart(reports.revenueData);
+
+            // Display room performance
+            displayRoomPerformance(reports.roomTypePerformance);
+
+            // Display status distribution
+            displayStatusDistribution(reports.statusDistribution);
+
+            // Display revenue summary
+            displayRevenueSummary(reports);
+        }
+
+        function displayRevenueChart(revenueData) {
+            const container = document.getElementById('revenueBars');
+            const maxRevenue = Math.max(...revenueData.map(item => item.revenue));
+            
+            container.innerHTML = revenueData.map(item => {
+                const height = maxRevenue > 0 ? (item.revenue / maxRevenue * 100) : 0;
+                return `
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="width: 30px; background: #3498db; height: ${height}%; border-radius: 3px;"></div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem; text-align: center;">
+                            <div>$${(item.revenue/1000).toFixed(0)}K</div>
+                            <div>${new Date(item.date).toLocaleDateString('en', {month: 'short', day: 'numeric'})}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayRoomPerformance(roomPerformance) {
+            const container = document.getElementById('roomPerformance');
+            container.innerHTML = roomPerformance.map(room => `
+                <tr>
+                    <td>${room.type}</td>
+                    <td>$${room.revenue.toLocaleString()}</td>
+                    <td>${room.bookings}</td>
+                </tr>
+            `).join('');
+        }
+
+        function displayStatusDistribution(statusDistribution) {
+            const container = document.getElementById('statusDistribution');
+            const total = Object.values(statusDistribution).reduce((sum, count) => sum + count, 0);
+            
+            container.innerHTML = Object.entries(statusDistribution).map(([status, count]) => {
+                const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                return `
+                    <div style="margin: 0.5rem 0;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>${status}</span>
+                            <span>${count} (${percentage}%)</span>
+                        </div>
+                        <div style="width: 100%; background: #f0f0f0; border-radius: 5px; height: 8px;">
+                            <div style="width: ${percentage}%; background: #3498db; height: 100%; border-radius: 5px;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayRevenueSummary(reports) {
+            const container = document.getElementById('revenueSummary');
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                    <span>Total Revenue:</span>
+                    <strong>$${reports.totalRevenue.toLocaleString()}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                    <span>Total Bookings:</span>
+                    <strong>${reports.totalBookings}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                    <span>Average Booking:</span>
+                    <strong>$${reports.averageBookingValue.toFixed(2)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                    <span>Revenue per Room:</span>
+                    <strong>$${(reports.totalRevenue / 30).toFixed(2)}</strong>
+                </div>
+            `;
+        }
+
+        function exportPDF() {
+            alert('PDF export feature will be implemented with a proper library');
+        }
+
+        function exportExcel() {
+            alert('Excel export feature will be implemented with a proper library');
+        }
+
+        function printReport() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

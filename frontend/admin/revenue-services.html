@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Services - Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .dashboard { padding: 100px 0 50px; min-height: 100vh; background: #f8f9fa; }
+        .admin-nav { background: #2c3e50; padding: 1rem 0; position: fixed; width: 100%; top: 70px; z-index: 999; }
+        .admin-nav .container { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+        .admin-nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
+        .admin-nav a:hover, .admin-nav a.active { background: #3498db; }
+        
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .service-card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .service-header { display: flex; justify-content: between; align-items: center; margin-bottom: 1rem; }
+        .service-revenue { font-size: 1.5rem; font-weight: bold; color: #27ae60; }
+        .progress-bar { width: 100%; background: #f0f0f0; border-radius: 10px; height: 10px; margin: 0.5rem 0; }
+        .progress-fill { height: 100%; border-radius: 10px; background: #3498db; }
+        
+        .summary-card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo"><h1>💰 Revenue Services</h1></div>
+            <nav class="nav">
+                <span>Welcome, <strong id="adminName"></strong></span>
+                <button class="logout-btn" onclick="auth.logout()">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-nav">
+        <div class="container">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="manage-rooms.html">Manage Rooms</a>
+            <a href="manage-bookings.html">Manage Bookings</a>
+            <a href="reports.html">Reports & Analytics</a>
+            <a href="revenue-services.html" class="active">Revenue Services</a>
+        </div>
+    </div>
+
+    <main class="container dashboard">
+        <h2>Secondary Revenue Services</h2>
+        <p style="color: #666; margin-bottom: 2rem;">Track additional revenue streams beyond room bookings</p>
+
+        <!-- Summary -->
+        <div class="summary-card">
+            <h3>Revenue Summary</h3>
+            <div class="summary-stats">
+                <div>
+                    <div class="stat-value" id="totalSecondaryRevenue">$0</div>
+                    <div class="stat-label">Total Secondary Revenue</div>
+                </div>
+                <div>
+                    <div class="stat-value" id="totalServiceBookings">0</div>
+                    <div class="stat-label">Total Service Bookings</div>
+                </div>
+                <div>
+                    <div class="stat-value" id="topService">-</div>
+                    <div class="stat-label">Top Performing Service</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="services-grid" id="servicesGrid">
+            <!-- Services will be loaded here -->
+        </div>
+
+        <!-- Add New Service -->
+        <div class="service-card">
+            <h3>Add New Revenue Service</h3>
+            <form id="addServiceForm" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label>Service Name</label>
+                    <input type="text" id="serviceName" required style="width: 100%;">
+                </div>
+                <div>
+                    <label>Price per Service</label>
+                    <input type="number" id="servicePrice" required min="0" style="width: 100%;">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Service</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (!auth.isLoggedIn() || !auth.isAdmin()) {
+            alert('Access denied.');
+            window.location.href = '../login.html';
+        }
+
+        document.getElementById('adminName').textContent = auth.user.name;
+        loadRevenueServices();
+
+        async function loadRevenueServices() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/revenue-services`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayRevenueServices(data);
+                } else {
+                    alert('Error loading revenue services: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error loading revenue services: ' + error.message);
+            }
+        }
+
+        function displayRevenueServices(data) {
+            const { revenueServices, summary } = data;
+            
+            // Update summary
+            document.getElementById('totalSecondaryRevenue').textContent = `$${summary.totalSecondaryRevenue.toLocaleString()}`;
+            document.getElementById('totalServiceBookings').textContent = summary.totalServiceBookings;
+            document.getElementById('topService').textContent = summary.mostProfitableService.service;
+
+            // Display services
+            const container = document.getElementById('servicesGrid');
+            
+            if (revenueServices.length === 0) {
+                container.innerHTML = '<div class="service-card" style="grid-column: 1 / -1; text-align: center;"><h3>No revenue services data yet</h3><p>Additional services will appear here as guests book them.</p></div>';
+                return;
+            }
+
+            container.innerHTML = revenueServices.map(service => `
+                <div class="service-card">
+                    <div class="service-header">
+                        <h3 style="margin: 0;">${service.service}</h3>
+                        <div class="service-revenue">$${service.revenue}</div>
+                    </div>
+                    <div style="color: #666; margin-bottom: 1rem;">
+                        ${service.bookings} bookings
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(service.revenue / summary.totalSecondaryRevenue * 100)}%"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666;">
+                        <span>Revenue Share</span>
+                        <span>${((service.revenue / summary.totalSecondaryRevenue) * 100).toFixed(1)}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Handle add service form
+        document.getElementById('addServiceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('In a real system, this would add a new revenue service to track. Implementation would require additional backend endpoints.');
+        });
+    </script>
+</body>
+</html>

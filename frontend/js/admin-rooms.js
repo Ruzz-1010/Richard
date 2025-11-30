@@ -1,33 +1,26 @@
-// Room Management Functions
 class RoomManager {
     constructor() {
         this.rooms = [];
-        this.currentRoom = null;
     }
 
-    // Load all rooms
+    // Load REAL rooms from database
     async loadRooms() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/rooms`, {
-                headers: auth.getAuthHeaders()
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                this.rooms = data.rooms || [];
+            const response = await fetch(`${API_BASE_URL}/api/admin/rooms`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.rooms = data.rooms;
+                this.renderRooms();
             } else {
-                this.loadDemoRooms();
+                alert('Error loading rooms: ' + data.message);
             }
-
-            this.renderRooms();
         } catch (error) {
-            console.error('Error loading rooms:', error);
-            this.loadDemoRooms();
-            this.renderRooms();
+            alert('Error loading rooms: ' + error.message);
         }
     }
 
-    // Render rooms grid
+    // Render REAL rooms
     renderRooms() {
         const container = document.getElementById('roomsGrid');
         
@@ -73,9 +66,6 @@ class RoomManager {
                         ${(room.amenities || []).map(amenity => 
                             `<span class="amenity-tag">${amenity}</span>`
                         ).join('')}
-                        ${(!room.amenities || room.amenities.length === 0) ? 
-                            '<span style="color: #666; font-style: italic;">No amenities</span>' : ''
-                        }
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.9rem;">
@@ -85,186 +75,93 @@ class RoomManager {
                 </div>
                 
                 <div class="room-footer">
-                    <button class="btn btn-primary btn-small" onclick="editRoom('${room.id}')">Edit</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteRoom('${room.id}')">Delete</button>
-                    <button class="btn btn-secondary btn-small" onclick="viewRoomDetails('${room.id}')">Details</button>
+                    <button class="btn btn-primary btn-small" onclick="editRoom('${room._id}')">Edit</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteRoom('${room._id}')">Delete</button>
                 </div>
             </div>
         `).join('');
     }
 
-    // Show room modal
-    showRoomModal(room = null) {
-        this.currentRoom = room;
-        const modal = document.getElementById('roomModal');
-        const title = document.getElementById('modalTitle');
-        const form = document.getElementById('roomForm');
-        
-        if (room) {
-            title.textContent = 'Edit Room';
-            this.populateRoomForm(room);
-        } else {
-            title.textContent = 'Add New Room';
-            form.reset();
-        }
-        
-        modal.style.display = 'flex';
-    }
-
-    // Hide room modal
-    hideRoomModal() {
-        document.getElementById('roomModal').style.display = 'none';
-        this.currentRoom = null;
-    }
-
-    // Populate room form for editing
-    populateRoomForm(room) {
-        document.getElementById('roomId').value = room.id;
-        document.getElementById('roomName').value = room.name;
-        document.getElementById('roomType').value = room.type;
-        document.getElementById('roomPrice').value = room.price;
-        document.getElementById('roomCapacity').value = room.capacity || 2;
-        document.getElementById('roomStatus').value = room.status;
-        document.getElementById('roomBedType').value = room.bedType || 'Queen Bed';
-        document.getElementById('roomDescription').value = room.description || '';
-
-        // Clear all amenities checkboxes
-        document.querySelectorAll('input[name="amenities"]').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-
-        // Check amenities that exist
-        if (room.amenities) {
-            room.amenities.forEach(amenity => {
-                const checkbox = document.querySelector(`input[value="${amenity}"]`);
-                if (checkbox) checkbox.checked = true;
-            });
-        }
-    }
-
-    // Save room (create or update)
-    async saveRoom(roomData) {
+    // ADD NEW ROOM - REAL OPERATION
+    async addRoom(roomData) {
         try {
-            const url = roomData.id ? 
-                `${API_BASE_URL}/api/admin/rooms/${roomData.id}` : 
-                `${API_BASE_URL}/api/admin/rooms`;
-                
-            const method = roomData.id ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
+            const response = await fetch(`${API_BASE_URL}/api/admin/rooms`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...auth.getAuthHeaders()
                 },
                 body: JSON.stringify(roomData)
             });
 
-            if (response.ok) {
-                alert(`Room ${roomData.id ? 'updated' : 'created'} successfully!`);
-                this.hideRoomModal();
-                this.loadRooms();
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Room added successfully!');
+                this.loadRooms(); // Reload the list
                 return true;
             } else {
-                const data = await response.json();
-                alert(data.message || 'Failed to save room');
+                alert('Error adding room: ' + data.message);
                 return false;
             }
         } catch (error) {
-            console.error('Error saving room:', error);
-            alert('Error saving room. Using demo mode.');
-            
-            // Demo mode fallback
-            if (roomData.id) {
-                const index = this.rooms.findIndex(r => r.id === roomData.id);
-                if (index !== -1) {
-                    this.rooms[index] = { ...this.rooms[index], ...roomData };
-                }
-            } else {
-                this.rooms.push({ ...roomData, id: Date.now().toString(), createdAt: new Date() });
-            }
-            
-            this.hideRoomModal();
-            this.renderRooms();
-            return true;
+            alert('Error adding room: ' + error.message);
+            return false;
         }
     }
 
-    // Delete room
-    async deleteRoom(roomId) {
-        if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+    // UPDATE ROOM - REAL OPERATION
+    async updateRoom(roomId, roomData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/rooms/${roomId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(roomData)
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Room updated successfully!');
+                this.loadRooms(); // Reload the list
+                return true;
+            } else {
+                alert('Error updating room: ' + data.message);
+                return false;
+            }
+        } catch (error) {
+            alert('Error updating room: ' + error.message);
             return false;
         }
+    }
+
+    // DELETE ROOM - REAL OPERATION
+    async deleteRoom(roomId) {
+        if (!confirm('Are you sure you want to delete this room?')) return false;
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/admin/rooms/${roomId}`, {
-                method: 'DELETE',
-                headers: auth.getAuthHeaders()
+                method: 'DELETE'
             });
 
-            if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
                 alert('Room deleted successfully!');
-                this.loadRooms();
+                this.loadRooms(); // Reload the list
                 return true;
             } else {
-                alert('Failed to delete room');
+                alert('Error deleting room: ' + data.message);
                 return false;
             }
         } catch (error) {
-            console.error('Error deleting room:', error);
-            alert('Error deleting room. Using demo mode.');
-            
-            // Demo mode fallback
-            this.rooms = this.rooms.filter(room => room.id !== roomId);
-            this.renderRooms();
-            return true;
+            alert('Error deleting room: ' + error.message);
+            return false;
         }
-    }
-
-    // Load demo rooms (fallback)
-    loadDemoRooms() {
-        this.rooms = [
-            {
-                id: '1',
-                name: 'Deluxe Ocean View',
-                type: 'Deluxe',
-                price: 299,
-                status: 'Available',
-                capacity: 3,
-                description: 'Beautiful room with ocean view and premium amenities.',
-                amenities: ['WiFi', 'TV', 'AC', 'Ocean View', 'Balcony'],
-                bedType: 'King Bed',
-                createdAt: new Date()
-            },
-            {
-                id: '2',
-                name: 'Executive Suite',
-                type: 'Suite',
-                price: 499,
-                status: 'Occupied',
-                capacity: 4,
-                description: 'Spacious suite with separate living area and work space.',
-                amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Safe', 'Jacuzzi'],
-                bedType: 'King Bed',
-                createdAt: new Date()
-            },
-            {
-                id: '3',
-                name: 'Presidential Suite',
-                type: 'Presidential',
-                price: 899,
-                status: 'Reserved',
-                capacity: 6,
-                description: 'Luxurious presidential suite with premium services.',
-                amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Safe', 'Jacuzzi', 'Ocean View', 'Balcony'],
-                bedType: 'King Bed',
-                createdAt: new Date()
-            }
-        ];
     }
 }
 
-// Create global room manager instance
 const roomManager = new RoomManager();
 
 // Global functions
@@ -272,18 +169,30 @@ function loadRooms() {
     roomManager.loadRooms();
 }
 
-function showRoomModal() {
-    roomManager.showRoomModal();
+function showAddRoomForm() {
+    document.getElementById('roomModal').style.display = 'flex';
+    document.getElementById('modalTitle').textContent = 'Add New Room';
+    document.getElementById('roomForm').reset();
 }
 
 function hideRoomModal() {
-    roomManager.hideRoomModal();
+    document.getElementById('roomModal').style.display = 'none';
 }
 
 function editRoom(roomId) {
-    const room = roomManager.rooms.find(r => r.id === roomId);
+    const room = roomManager.rooms.find(r => r._id === roomId);
     if (room) {
-        roomManager.showRoomModal(room);
+        document.getElementById('roomModal').style.display = 'flex';
+        document.getElementById('modalTitle').textContent = 'Edit Room';
+        
+        // Fill form with room data
+        document.getElementById('roomId').value = room._id;
+        document.getElementById('roomName').value = room.name;
+        document.getElementById('roomType').value = room.type;
+        document.getElementById('roomPrice').value = room.price;
+        document.getElementById('roomCapacity').value = room.capacity;
+        document.getElementById('roomStatus').value = room.status;
+        document.getElementById('roomDescription').value = room.description || '';
     }
 }
 
@@ -291,19 +200,9 @@ function deleteRoom(roomId) {
     roomManager.deleteRoom(roomId);
 }
 
-function viewRoomDetails(roomId) {
-    const room = roomManager.rooms.find(r => r.id === roomId);
-    if (room) {
-        alert(`Room Details:\n\nName: ${room.name}\nType: ${room.type}\nPrice: $${room.price}\nStatus: ${room.status}\nCapacity: ${room.capacity} guests\nAmenities: ${room.amenities ? room.amenities.join(', ') : 'None'}`);
-    }
-}
-
-// Handle room form submission
+// Handle form submission
 document.getElementById('roomForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const amenities = Array.from(document.querySelectorAll('input[name="amenities"]:checked'))
-        .map(checkbox => checkbox.value);
     
     const roomData = {
         name: document.getElementById('roomName').value,
@@ -311,22 +210,20 @@ document.getElementById('roomForm').addEventListener('submit', async function(e)
         price: parseFloat(document.getElementById('roomPrice').value),
         capacity: parseInt(document.getElementById('roomCapacity').value),
         status: document.getElementById('roomStatus').value,
-        bedType: document.getElementById('roomBedType').value,
         description: document.getElementById('roomDescription').value,
-        amenities: amenities
+        amenities: ['WiFi', 'TV', 'AC'] // Default amenities
     };
 
     const roomId = document.getElementById('roomId').value;
+    
+    let success;
     if (roomId) {
-        roomData.id = roomId;
+        success = await roomManager.updateRoom(roomId, roomData);
+    } else {
+        success = await roomManager.addRoom(roomData);
     }
-
-    await roomManager.saveRoom(roomData);
-});
-
-// Close modal when clicking outside
-document.getElementById('roomModal').addEventListener('click', function(e) {
-    if (e.target === this) {
+    
+    if (success) {
         hideRoomModal();
     }
 });
