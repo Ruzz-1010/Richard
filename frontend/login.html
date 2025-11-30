@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Luxury Hotel</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <header class="header">
@@ -32,6 +33,9 @@
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" required placeholder="Enter your password" minlength="6">
+                </div>
+                <div class="form-group">
+                    <div class="g-recaptcha" data-sitekey="6LeyrhwsAAAAACZx4BBID7lZ1VEeC-rJfh5yQIA8"></div>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
             </form>
@@ -61,16 +65,24 @@
         // Handle login form
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const recaptchaResponse = grecaptcha.getResponse();
             const submitBtn = this.querySelector('button[type="submit"]');
-            
+
+            // Check if reCAPTCHA is completed
+            if (!recaptchaResponse) {
+                const messageDiv = document.getElementById('message');
+                messageDiv.innerHTML = `<div class="message error">Please complete the reCAPTCHA verification.</div>`;
+                return;
+            }
+
             // Show loading
             submitBtn.textContent = 'Logging in...';
             submitBtn.disabled = true;
 
-            const result = await auth.login(email, password);
+            const result = await auth.login(email, password, recaptchaResponse);
             
             const messageDiv = document.getElementById('message');
             if (result.success) {

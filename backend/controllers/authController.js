@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const Recaptcha = require('recaptcha2');
 
 // Register user
 const register = async (req, res) => {
@@ -57,13 +58,26 @@ const register = async (req, res) => {
 // Login user
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, recaptchaResponse } = req.body;
 
         console.log('Login attempt:', email);
 
         // Simple validation
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        // Verify reCAPTCHA
+        const recaptcha = new Recaptcha({
+            siteKey: '6LeyrhwsAAAAACZx4BBID7lZ1VEeC-rJfh5yQIA8',
+            secretKey: '6LeyrhwsAAAAAJDIsKE8cX_KR9Dxhl_Q40hwSE0x'
+        });
+
+        try {
+            await recaptcha.validate(recaptchaResponse);
+        } catch (error) {
+            console.log('reCAPTCHA verification failed:', error.message);
+            return res.status(400).json({ message: 'reCAPTCHA verification failed' });
         }
 
         // Find user
