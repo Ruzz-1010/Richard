@@ -6,32 +6,130 @@
     <title>Manage Rooms - Admin Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        .dashboard { padding: 100px 0 50px; min-height: 100vh; background: #f8f9fa; }
-        .admin-nav { background: #2c3e50; padding: 1rem 0; position: fixed; width: 100%; top: 70px; z-index: 999; }
-        .admin-nav .container { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
-        .admin-nav a { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
-        .admin-nav a:hover, .admin-nav a.active { background: #3498db; }
+        .dashboard { 
+            padding: 100px 0 50px; 
+            min-height: 100vh; 
+            background: #f8f9fa; 
+        }
+        .admin-nav { 
+            background: #2c3e50; 
+            padding: 1rem 0; 
+            position: fixed; 
+            width: 100%; 
+            top: 70px; 
+            z-index: 999; 
+        }
+        .admin-nav .container { 
+            display: flex; 
+            gap: 2rem; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+        .admin-nav a { 
+            color: white; 
+            text-decoration: none; 
+            padding: 0.5rem 1rem; 
+            border-radius: 5px; 
+            transition: background 0.3s; 
+        }
+        .admin-nav a:hover, .admin-nav a.active { 
+            background: #3498db; 
+        }
         
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 2rem; 
+            padding: 1rem 0;
+        }
         
-        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; }
-        .room-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .room-header { padding: 1.5rem; border-bottom: 1px solid #eee; }
-        .room-body { padding: 1.5rem; }
-        .room-footer { padding: 1rem 1.5rem; background: #f8f9fa; border-top: 1px solid #eee; display: flex; gap: 0.5rem; }
+        .rooms-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+            gap: 2rem; 
+        }
+        .room-card { 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            transition: transform 0.3s;
+        }
+        .room-card:hover {
+            transform: translateY(-5px);
+        }
+        .room-header { 
+            padding: 1.5rem; 
+            border-bottom: 1px solid #eee; 
+        }
+        .room-body { 
+            padding: 1.5rem; 
+        }
+        .room-footer { 
+            padding: 1rem 1.5rem; 
+            background: #f8f9fa; 
+            border-top: 1px solid #eee; 
+            display: flex; 
+            gap: 0.5rem; 
+        }
         
-        .room-image { width: 100%; height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #666; }
-        .room-price { font-size: 1.5rem; font-weight: bold; color: #27ae60; }
-        .room-amenities { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
-        .amenity-tag { background: #3498db; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; }
+        .room-image { 
+            width: 100%; 
+            height: 200px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .room-price { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            color: #27ae60; 
+        }
+        .room-amenities { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 0.5rem; 
+            margin: 1rem 0; 
+        }
+        .amenity-tag { 
+            background: #3498db; 
+            color: white; 
+            padding: 0.3rem 0.8rem; 
+            border-radius: 15px; 
+            font-size: 0.8rem; 
+        }
         
-        .status-badge { padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; font-weight: bold; }
+        .status-badge { 
+            padding: 0.3rem 0.8rem; 
+            border-radius: 15px; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+        }
         .status-available { background: #d4edda; color: #155724; }
         .status-occupied { background: #f8d7da; color: #721c24; }
         .status-reserved { background: #fff3cd; color: #856404; }
         .status-maintenance { background: #e2e3e5; color: #383d41; }
         
-        .btn-small { padding: 0.5rem 1rem; font-size: 0.8rem; }
+        .btn-small { 
+            padding: 0.5rem 1rem; 
+            font-size: 0.8rem; 
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        
+        .btn-small:hover {
+            opacity: 0.9;
+        }
         
         /* Modal Styles */
         .modal { 
@@ -56,67 +154,120 @@
             overflow-y: auto; 
         }
         
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1rem; 
+            margin-bottom: 1rem;
+        }
+        .form-actions { 
+            display: flex; 
+            gap: 1rem; 
+            margin-top: 1.5rem; 
+        }
         
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50; }
+        .form-group { 
+            margin-bottom: 1rem; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: bold; 
+            color: #2c3e50; 
+        }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 2px solid #e9ecef;
             border-radius: 5px;
             font-size: 1rem;
+            box-sizing: border-box;
         }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #3498db;
+        }
+
+        /* Add Room Button */
+        .add-room-btn {
+            background: #27ae60;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        .add-room-btn:hover {
+            background: #219653;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: auto;
         }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <div class="logo"><h1>🏨 Manage Rooms</h1></div>
+            <div class="logo"><h1>🏨 Luxury Hotel - Room Management</h1></div>
             <nav class="nav">
                 <span>Welcome, <strong id="adminName"></strong></span>
-                <button class="logout-btn" onclick="auth.logout()">Logout</button>
+                <button class="logout-btn" onclick="auth.logout()">🚪 Logout</button>
             </nav>
         </div>
     </header>
 
     <div class="admin-nav">
         <div class="container">
-            <a href="dashboard.html">Dashboard</a>
-            <a href="manage-rooms.html" class="active">Manage Rooms</a>
-            <a href="manage-bookings.html">Manage Bookings</a>
-            <a href="reports.html">Reports & Analytics</a>
-            <a href="revenue-services.html">Revenue Services</a>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="manage-rooms.html" class="active">🏨 Manage Rooms</a>
+            <a href="manage-bookings.html">📋 Manage Bookings</a>
+            <a href="reports.html">📈 Reports & Analytics</a>
+            <a href="revenue-services.html">💰 Revenue Services</a>
         </div>
     </div>
 
     <main class="container dashboard">
+        <!-- PAGE HEADER WITH ADD BUTTON -->
         <div class="page-header">
-            <h2>Room Management</h2>
-            <button class="btn btn-primary" onclick="showAddRoomForm()">➕ Add New Room</button>
+            <h2 style="margin: 0; color: #2c3e50;">Room Management</h2>
+            <button class="add-room-btn" onclick="showAddRoomForm()">
+                ➕ Add New Room
+            </button>
         </div>
 
+        <!-- ROOMS GRID -->
         <div class="rooms-grid" id="roomsGrid">
-            <!-- Rooms will be loaded here -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #666;">
+                <h3>Loading rooms...</h3>
+                <p>Please wait while we load the room data.</p>
+            </div>
         </div>
     </main>
 
-    <!-- Add/Edit Room Modal -->
+    <!-- ADD/EDIT ROOM MODAL -->
     <div id="roomModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalTitle">Add New Room</h3>
+            <h3 id="modalTitle" style="margin-bottom: 1.5rem; color: #2c3e50;">Add New Room</h3>
             <form id="roomForm">
                 <input type="hidden" id="roomId">
                 
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Room Name *</label>
-                        <input type="text" id="roomName" required>
+                        <input type="text" id="roomName" required placeholder="e.g., Deluxe Ocean View">
                     </div>
                     <div class="form-group">
                         <label>Room Type *</label>
@@ -131,7 +282,7 @@
                     </div>
                     <div class="form-group">
                         <label>Price per Night ($) *</label>
-                        <input type="number" id="roomPrice" required min="0" step="0.01">
+                        <input type="number" id="roomPrice" required min="0" step="0.01" placeholder="e.g., 199.99">
                     </div>
                     <div class="form-group">
                         <label>Capacity *</label>
@@ -159,42 +310,42 @@
                 
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea id="roomDescription" rows="3" placeholder="Room description..."></textarea>
+                    <textarea id="roomDescription" rows="3" placeholder="Describe the room features, view, and amenities..."></textarea>
                 </div>
                 
                 <div class="form-group">
                     <label>Amenities</label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="WiFi"> WiFi
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="WiFi"> 📶 WiFi
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="TV"> TV
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="TV"> 📺 TV
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="AC"> Air Conditioning
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="AC"> ❄️ Air Conditioning
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="Mini Bar"> Mini Bar
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="Mini Bar"> 🍷 Mini Bar
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="Safe"> Safe
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="Safe"> 🔒 Safe
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="Jacuzzi"> Jacuzzi
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="Jacuzzi"> 🛁 Jacuzzi
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="Ocean View"> Ocean View
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="Ocean View"> 🌊 Ocean View
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="amenities" value="Balcony"> Balcony
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="amenities" value="Balcony"> 🌴 Balcony
                         </label>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Room</button>
-                    <button type="button" class="btn btn-secondary" onclick="hideRoomModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">💾 Save Room</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideRoomModal()" style="padding: 12px 24px;">❌ Cancel</button>
                 </div>
             </form>
         </div>
@@ -224,9 +375,11 @@
                     renderRooms();
                 } else {
                     alert('Error loading rooms: ' + data.message);
+                    renderRooms(); // Still render empty state
                 }
             } catch (error) {
                 alert('Error loading rooms: ' + error.message);
+                renderRooms(); // Still render empty state
             }
         }
 
@@ -238,7 +391,10 @@
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #666;">
                         <h3>No rooms found</h3>
-                        <p>Click "Add New Room" to create your first room.</p>
+                        <p>Click the "Add New Room" button above to create your first room.</p>
+                        <button class="add-room-btn" onclick="showAddRoomForm()" style="margin-top: 1rem;">
+                            ➕ Add Your First Room
+                        </button>
                     </div>
                 `;
                 return;
@@ -259,10 +415,7 @@
                     
                     <div class="room-body">
                         <div class="room-image">
-                            ${room.images && room.images.length > 0 ? 
-                                `<img src="${room.images[0]}" alt="${room.name}" style="width:100%;height:100%;object-fit:cover;">` : 
-                                '🏨 Room Image'
-                            }
+                            ${room.name}
                         </div>
                         
                         <div style="margin: 1rem 0;">
@@ -276,17 +429,20 @@
                             ${(room.amenities || []).map(amenity => 
                                 `<span class="amenity-tag">${amenity}</span>`
                             ).join('')}
+                            ${(!room.amenities || room.amenities.length === 0) ? 
+                                '<span style="color: #666; font-style: italic;">No amenities specified</span>' : ''
+                            }
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.9rem;">
-                            <span>Capacity: ${room.capacity || 2} guests</span>
-                            <span>Created: ${new Date(room.createdAt).toLocaleDateString()}</span>
+                            <span>👥 Capacity: ${room.capacity || 2} guests</span>
+                            <span>📅 Created: ${new Date(room.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
                     
                     <div class="room-footer">
-                        <button class="btn btn-primary btn-small" onclick="editRoom('${room._id}')">Edit</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteRoom('${room._id}')">Delete</button>
+                        <button class="btn-small btn-primary" onclick="editRoom('${room._id}')">✏️ Edit</button>
+                        <button class="btn-small btn-danger" onclick="deleteRoom('${room._id}')">🗑️ Delete</button>
                     </div>
                 </div>
             `).join('');
